@@ -62,11 +62,29 @@ class MapViewController: UIViewController, CocoaMQTTDelegate, MKMapViewDelegate 
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         if (annotation is HSLPointAnnotation) {
             let hsl = annotation as! HSLPointAnnotation
-            let pin = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "pin")
-            pin.pinTintColor = self.getPinColor(type: hsl.type)
-            return pin
+            let pinAnnotation = MKAnnotationView(annotation: annotation, reuseIdentifier: "pin")
+            pinAnnotation.image = self.getIcon(type: hsl.type)
+            pinAnnotation.tintColor = UIColor.green
+            return pinAnnotation
         }
         return nil
+    }
+
+    func getIcon(type: String) -> UIImage {
+        switch type {
+        case "bus":
+            return #imageLiteral(resourceName: "bus-icon")
+        case "tram":
+            return #imageLiteral(resourceName: "tram-icon")
+        case "subway":
+            return #imageLiteral(resourceName: "subway-icon")
+        case "ferry":
+            return #imageLiteral(resourceName: "ferry-icon")
+        case "rail":
+            return #imageLiteral(resourceName: "train-icon")
+        default:
+            return #imageLiteral(resourceName: "bus-icon")
+        }
     }
 
     func getPinColor(type: String) -> UIColor {
