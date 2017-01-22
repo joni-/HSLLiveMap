@@ -24,6 +24,14 @@ class MapViewController: UIViewController, CocoaMQTTDelegate, MKMapViewDelegate 
 
         mqtt = CocoaMQTT(clientID: "MQTT-LiveIOSApp", host: "mqtt.hsl.fi", port: 1883)
         mqtt.delegate = self
+        self.map.delegate = self
+
+
+        // Zoom around Helsinki area
+        let coordinate = CLLocationCoordinate2D(latitude: 60.20, longitude: 24.92)
+        let span = MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
+        let region = MKCoordinateRegionMake(coordinate, span)
+        self.map.setRegion(region, animated: false)
     }
 
     override func didReceiveMemoryWarning() {
@@ -39,6 +47,12 @@ class MapViewController: UIViewController, CocoaMQTTDelegate, MKMapViewDelegate 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidAppear(animated)
         mqtt.disconnect()
+    }
+
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        let pin = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "pin")
+        pin.pinTintColor = UIColor.green
+        return pin
     }
 
     func mqtt(_ mqtt: CocoaMQTT, didConnect host: String, port: Int) {
@@ -73,7 +87,6 @@ class MapViewController: UIViewController, CocoaMQTTDelegate, MKMapViewDelegate 
                         let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
                         let p = MKPointAnnotation()
                         p.coordinate = coordinate
-                        
                         self.points[vehicleId] = p
                         
                         map.addAnnotation(p)
