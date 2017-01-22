@@ -11,6 +11,16 @@ import CocoaMQTT
 import MapKit
 import Foundation
 
+class HSLPointAnnotation: MKPointAnnotation
+{
+    public var type: String
+
+    init(type: String) {
+        self.type = type
+        super.init()
+    }
+}
+
 class MapViewController: UIViewController, CocoaMQTTDelegate, MKMapViewDelegate {
 
     @IBOutlet weak var map: MKMapView!
@@ -50,13 +60,38 @@ class MapViewController: UIViewController, CocoaMQTTDelegate, MKMapViewDelegate 
     }
 
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        let pin = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "pin")
-        pin.pinTintColor = UIColor.green
-        return pin
+        if (annotation is HSLPointAnnotation) {
+            let hsl = annotation as! HSLPointAnnotation
+            let pin = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "pin")
+            pin.pinTintColor = self.getPinColor(type: hsl.type)
+            return pin
+        }
+        return nil
+    }
+
+    func getPinColor(type: String) -> UIColor {
+        switch type {
+        case "bus":
+            return UIColor.blue
+        case "tram":
+            return UIColor.green
+        case "subway":
+            return UIColor.red
+        case "ferry":
+            return UIColor.cyan
+        case "rail":
+            return UIColor.orange
+        default:
+            return UIColor.black
+        }
     }
 
     func mqtt(_ mqtt: CocoaMQTT, didConnect host: String, port: Int) {
-        mqtt.subscribe("/hfp/journey/#")
+        mqtt.subscribe("/hfp/journey/tram/#")
+        mqtt.subscribe("/hfp/journey/bus/#")
+        mqtt.subscribe("/hfp/journey/subway/#")
+        mqtt.subscribe("/hfp/journey/rail/#")
+        mqtt.subscribe("/hfp/journey/ferry/#")
     }
 
     func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
@@ -84,8 +119,10 @@ class MapViewController: UIViewController, CocoaMQTTDelegate, MKMapViewDelegate 
                             self.points.removeValue(forKey: vehicleId)
                         }
 
+                        let parts: [String] = message.topic.components(separatedBy: "/")
+
                         let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-                        let p = MKPointAnnotation()
+                        let p = HSLPointAnnotation(type: parts[3])
                         p.coordinate = coordinate
                         self.points[vehicleId] = p
                         
