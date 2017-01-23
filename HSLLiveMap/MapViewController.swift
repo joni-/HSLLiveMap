@@ -57,6 +57,7 @@ class MapViewController: UIViewController, CocoaMQTTDelegate, MKMapViewDelegate 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidAppear(animated)
         mqtt.disconnect()
+        map.removeAnnotations(Array(points.values))
     }
 
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
