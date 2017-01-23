@@ -11,11 +11,36 @@ import CocoaMQTT
 import MapKit
 import Foundation
 
+enum VehicleType {
+    case bus
+    case tram
+    case train
+    case subway
+    case ferry
+
+    static func fromString(type: String) -> VehicleType {
+        switch type {
+        case "bus":
+            return VehicleType.bus
+        case "tram":
+            return VehicleType.tram
+        case "rail":
+            return VehicleType.train
+        case "subway":
+            return VehicleType.subway
+        case "ferry":
+            return VehicleType.ferry
+        default:
+            return VehicleType.bus
+        }
+    }
+}
+
 class HSLPointAnnotation: MKPointAnnotation
 {
-    public var type: String
+    public var type: VehicleType
 
-    init(type: String) {
+    init(type: VehicleType) {
         self.type = type
         super.init()
     }
@@ -71,37 +96,20 @@ class MapViewController: UIViewController, CocoaMQTTDelegate, MKMapViewDelegate 
         return nil
     }
 
-    func getIcon(type: String) -> UIImage {
+    func getIcon(type: VehicleType) -> UIImage {
         switch type {
-        case "bus":
+        case VehicleType.bus:
             return #imageLiteral(resourceName: "bus-icon")
-        case "tram":
+        case VehicleType.tram:
             return #imageLiteral(resourceName: "tram-icon")
-        case "subway":
+        case VehicleType.subway:
             return #imageLiteral(resourceName: "subway-icon")
-        case "ferry":
+        case VehicleType.ferry:
             return #imageLiteral(resourceName: "ferry-icon")
-        case "rail":
+        case VehicleType.train:
             return #imageLiteral(resourceName: "train-icon")
         default:
             return #imageLiteral(resourceName: "bus-icon")
-        }
-    }
-
-    func getPinColor(type: String) -> UIColor {
-        switch type {
-        case "bus":
-            return UIColor.blue
-        case "tram":
-            return UIColor.green
-        case "subway":
-            return UIColor.red
-        case "ferry":
-            return UIColor.cyan
-        case "rail":
-            return UIColor.orange
-        default:
-            return UIColor.black
         }
     }
 
@@ -141,7 +149,7 @@ class MapViewController: UIViewController, CocoaMQTTDelegate, MKMapViewDelegate 
                         let parts: [String] = message.topic.components(separatedBy: "/")
 
                         let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-                        let p = HSLPointAnnotation(type: parts[3])
+                        let p = HSLPointAnnotation(type: VehicleType.fromString(type: parts[3]))
                         p.coordinate = coordinate
                         self.points[vehicleId] = p
                         
